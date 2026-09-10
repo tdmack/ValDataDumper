@@ -1,0 +1,90 @@
+<Project Sdk="Microsoft.NET.Sdk" InitialTargets="ValidateGamePaths">
+
+  <!--
+    ValDataDumper — a read-only BepInEx 5 plugin that writes Jötunn-format game-data fixtures
+    (item-list.md / recipe-list.md / piece-list.md), icons, recipe stations and a localization
+    table from the running game. See README.md.
+
+    This project references Valheim's own assemblies, which cannot be redistributed, so there
+    are deliberately NO default paths here — you must supply both on every machine:
+
+      dotnet build -c Release -p:ValheimManaged="<game>/valheim_Data/Managed" -p:BepInExCore="<profile>/BepInEx/core"
+
+    To avoid retyping them, create a Directory.Build.props next to this file:
+
+      <Project><PropertyGroup>
+        <ValheimManaged>...</ValheimManaged>
+        <BepInExCore>...</BepInExCore>
+      </PropertyGroup></Project>
+
+    That file is gitignored on purpose — it contains machine-local paths. Never commit it, and
+    never commit the referenced DLLs: they are Iron Gate's, not ours.
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <AssemblyName>ValDataDumper</AssemblyName>
+    <RootNamespace>ValDataDumper</RootNamespace>
+    <Version>0.5.0</Version>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <DebugType>none</DebugType>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <!--
+    Fail early and legibly rather than emitting a wall of "type or namespace not found" from a
+    HintPath that silently resolved to nothing. InitialTargets runs this before any other target,
+    including reference resolution.
+  -->
+  <Target Name="ValidateGamePaths">
+    <Error Condition="'$(ValheimManaged)' == ''"
+           Text="ValheimManaged is not set. Point it at your Valheim install's valheim_Data/Managed folder, e.g. -p:ValheimManaged=&quot;C:/Program Files (x86)/Steam/steamapps/common/Valheim/valheim_Data/Managed&quot; — or set it once in a local Directory.Build.props (see the comment at the top of this file)." />
+    <Error Condition="'$(BepInExCore)' == ''"
+           Text="BepInExCore is not set. Point it at the BepInEx/core folder of a BepInEx install or mod-manager profile, e.g. -p:BepInExCore=&quot;%25APPDATA%25/r2modmanPlus-local/Valheim/profiles/Default/BepInEx/core&quot; — or set it once in a local Directory.Build.props (see the comment at the top of this file)." />
+    <Error Condition="'$(ValheimManaged)' != '' And !Exists('$(ValheimManaged)/assembly_valheim.dll')"
+           Text="ValheimManaged is set to '$(ValheimManaged)' but assembly_valheim.dll is not there. Check the path points at valheim_Data/Managed." />
+    <Error Condition="'$(BepInExCore)' != '' And !Exists('$(BepInExCore)/BepInEx.dll')"
+           Text="BepInExCore is set to '$(BepInExCore)' but BepInEx.dll is not there. Check the path points at BepInEx/core, and that BepInEx has been run at least once." />
+  </Target>
+
+  <ItemGroup>
+    <Reference Include="BepInEx">
+      <HintPath>$(BepInExCore)\BepInEx.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="assembly_valheim">
+      <HintPath>$(ValheimManaged)\assembly_valheim.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="assembly_utils">
+      <HintPath>$(ValheimManaged)\assembly_utils.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <!-- Localization moved here in Valheim 1.0 (it was in assembly_valheim before). -->
+    <Reference Include="assembly_guiutils">
+      <HintPath>$(ValheimManaged)\assembly_guiutils.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine">
+      <HintPath>$(ValheimManaged)\UnityEngine.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>$(ValheimManaged)\UnityEngine.CoreModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.ImageConversionModule">
+      <HintPath>$(ValheimManaged)\UnityEngine.ImageConversionModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.InputLegacyModule">
+      <HintPath>$(ValheimManaged)\UnityEngine.InputLegacyModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+</Project>

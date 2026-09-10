@@ -1,0 +1,22 @@
+# Build output
+bin/
+obj/
+*.user
+
+# Never commit assemblies. The game DLLs this project references are Iron Gate's and are not
+# redistributable; the built plugin belongs on a GitHub Release, not in git.
+*.dll
+
+# Machine-local reference paths (see the comment at the top of ValDataDumper.csproj).
+# This file exists precisely to hold absolute paths from your machine — keep it out of git.
+Directory.Build.props
+
+# Dump output. The icons it contains are Iron Gate's artwork; the markdown is extracted game
+# data. Neither belongs in this repository. If you are tempted to commit a dump to "show what
+# the output looks like", document the format in the README instead.
+#
+# NOTE: do not add a bare `dump/` here. Git is case-insensitive on Windows and macOS by default,
+# so that pattern also matches this project's own `Dump/` source directory and silently drops six
+# of the seven source files from the repository.
+/valdatadumper/
+*.png
