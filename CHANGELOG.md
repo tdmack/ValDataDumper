@@ -21,9 +21,23 @@ are the only game-authored description of what that costs you, and their in-code
 given idol's real numbers. Without them a consumer has to either omit the risk or invent it.
 
 Emitted for every item rather than only idols, since the fields sit on every `SharedData` and a
-consumer should not have to guess which rows carry them. This is a **purely additive** change:
-existing keys are untouched, and `stats-dump.json` is deliberately left alone so it stays a
-drop-in for WackysDatabase's `SlimmedItem` shape.
+consumer should not have to guess which rows carry them.
+
+Also closes two gaps in `stats-dump.json` that stopped a consumer computing an item's stats at a
+level the source data did not already enumerate — which the Forge of Potential makes reachable,
+since it ignores `maxQuality` entirely:
+
+- `deflectionForcePerLevel` — `SlimmedItem` shipped `armorPerLevel`, `damagePerLevel`,
+  `blockPowerPerLevel` and `durabilityPerLevel` but omitted this one, leaving **parry force** the
+  single displayed stat with no computable value above the enumerated levels.
+- `scaleWeightByQuality` — weight is not flat across levels; `GetWeight` multiplies by
+  `1 + (quality - 1) * m_scaleWeightByQuality`.
+
+Both sit beside their siblings rather than in `item-extras.json`: splitting per-level stats across
+two files to preserve a defunct tool's exact key set would cost more than the compatibility is
+worth. `stats-dump.json` is therefore a **documented superset** of `SlimmedItem` from 0.6.0 —
+still additive, with no existing key moved or changed. `m_scaleByQuality` is deliberately *not*
+dumped: it scales the mesh, not a stat.
 
 ## 0.5.0
 

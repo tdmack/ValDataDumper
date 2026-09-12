@@ -8,6 +8,15 @@ namespace ValDataDumper.Dump
     /// Emits `stats-dump.json` in WackysDatabase's `StatsDump` / `SlimmedItem` shape, so it is
     /// a drop-in replacement for a WackysDatabase-produced fixture — consumers need no change.
     ///
+    /// **A documented superset since 0.6.0.** `SlimmedItem` shipped `armorPerLevel`,
+    /// `damagePerLevel`, `blockPowerPerLevel` and `durabilityPerLevel` but omitted
+    /// `deflectionForcePerLevel` and `scaleWeightByQuality`, which left parry force and weight
+    /// uncomputable at any level the source did not already enumerate. Both are added here,
+    /// beside their siblings rather than exiled to `item-extras.json`, because splitting
+    /// per-level stats across two files to preserve a defunct tool's exact key set would cost
+    /// more than the compatibility is worth. Additive only: no existing key moves or changes.
+    /// (`m_scaleByQuality` is deliberately not dumped — it scales the mesh, not a stat.)
+    ///
     /// Keys are sorted and every field is always written (numbers default 0, strings ""),
     /// matching the existing fixture so a re-dump diffs cleanly.
     /// </summary>
@@ -44,6 +53,10 @@ namespace ValDataDumper.Dump
             }
 
             Line("weight", Text.Num(sd.m_weight));
+            // Weight is not flat across levels: GetWeight multiplies by
+            // (1 + (quality-1) * m_scaleWeightByQuality). Without this, a computed weight
+            // above the level the catalog hard-codes is simply wrong.
+            Line("scaleWeightByQuality", Text.Num(sd.m_scaleWeightByQuality));
             Line("nameToken", Text.JsonString(sd.m_name ?? ""));
             Line("itemType", Text.JsonString(sd.m_itemType.ToString()));
             Line("skillType", Text.JsonString(sd.m_skillType.ToString()));
@@ -55,6 +68,11 @@ namespace ValDataDumper.Dump
             Line("blockPower", Text.Num(sd.m_blockPower));
             Line("blockPowerPerLevel", Text.Num(sd.m_blockPowerPerLevel));
             Line("deflectionForce", Text.Num(sd.m_deflectionForce));
+            // The one per-level field SlimmedItem omitted, though it shipped every other
+            // sibling. GetDeflectionForce is base + (quality-1) * this, so parry force was
+            // the single displayed stat that could not be computed for a level the source
+            // data did not already enumerate.
+            Line("deflectionForcePerLevel", Text.Num(sd.m_deflectionForcePerLevel));
             Line("timedBlockBonus", Text.Num(sd.m_timedBlockBonus));
             Line("durability", Text.Num(sd.m_maxDurability));
             Line("durabilityPerLevel", Text.Num(sd.m_durabilityPerLevel));

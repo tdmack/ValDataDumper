@@ -66,7 +66,7 @@ data/pieces/piece-list.md     one `## <PieceTable>` section per build tool
 images/items/<prefab>.png     icons, referenced from item-list as ../../images/items/...
 images/pieces/<prefab>.png
 recipe-stations.json          prefab -> crafting-station token + minimum station level
-stats-dump.json               per-item stats in WackysDatabase's SlimmedItem shape
+stats-dump.json               per-item stats, a documented superset of WackysDatabase's SlimmedItem
 item-extras.json              stack size, teleportability, vendor value, tool tier, set effects,
                               upgrader odds (refinement forge)
 piece-extras.json             comfort, container size, build station
