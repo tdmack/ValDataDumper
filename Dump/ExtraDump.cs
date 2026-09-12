@@ -22,7 +22,12 @@ namespace ValDataDumper.Dump
     ///
     /// `item-extras.json` covers facets the markdown format has no column for at all: stack
     /// size, teleportability (which ores can't go through a portal — real planning value),
-    /// vendor value, tool tier, and the set/status-effect wiring.
+    /// vendor value, tool tier, the set/status-effect wiring, and the **Upgrader (Refinement
+    /// Forge)** block — what a refinement attempt at the Forge of Potential actually rolls.
+    ///
+    /// Those four live here rather than in `stats-dump.json` because that file deliberately
+    /// mirrors WackysDatabase's `SlimmedItem` shape and should stay a drop-in for it; this
+    /// file is ours to extend.
     /// </summary>
     internal static class ExtraDump
     {
@@ -88,7 +93,26 @@ namespace ValDataDumper.Dump
                 sb.Append("      \"equipStatusEffect\": ").Append(Text.JsonString(
                     sd.m_equipStatusEffect != null ? sd.m_equipStatusEffect.name : "")).Append(",\n");
                 sb.Append("      \"consumeStatusEffect\": ").Append(Text.JsonString(
-                    sd.m_consumeStatusEffect != null ? sd.m_consumeStatusEffect.name : "")).Append("\n    }");
+                    sd.m_consumeStatusEffect != null ? sd.m_consumeStatusEffect.name : "")).Append(",\n");
+
+                // The Upgrader (Refinement Forge) block — the game's own grouping for these four,
+                // and the whole of what a refinement attempt rolls: a success raises the item by
+                // `successUpgradeSteps`, a break destroys it and refunds
+                // `breakReturnIngredientsAmount` of the recoverable requirements, and anything
+                // else drops it a level.
+                //
+                // They are emitted for every item, not just idols, because the fields sit on every
+                // SharedData — a consumer should not have to guess which rows carry them.
+                //
+                // Worth dumping precisely because their in-code initializers (0.65 / 0.1 / 1 / 0.5)
+                // are per-prefab overridable: reading a live ObjectDB is the only honest way to
+                // know a given idol's real odds.
+                sb.Append("      \"upgradeChance\": ").Append(Text.Num(sd.m_upgradeChance)).Append(",\n");
+                sb.Append("      \"breakChance\": ").Append(Text.Num(sd.m_breakChance)).Append(",\n");
+                sb.Append("      \"successUpgradeSteps\": ").Append(sd.m_successUpgradeSteps).Append(",\n");
+                // Key spelling corrected; the game's field is `m_breakReturnIngreientsAmount`.
+                sb.Append("      \"breakReturnIngredientsAmount\": ")
+                  .Append(Text.Num(sd.m_breakReturnIngreientsAmount)).Append("\n    }");
                 rows[kv.Key] = sb.ToString();
             }
             Write(path, version, "items", rows);
