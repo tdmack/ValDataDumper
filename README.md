@@ -91,8 +91,12 @@ Output is intended as a drop-in for JotunnDoc's, with **one documented differenc
 > If you rely on AssetID matching Unity's, this tool cannot serve you. Nothing known consumes it —
 > parsers expect the column to exist, not to mean anything.
 
-`stats-dump.json` matches WackysDatabase's `StatsDump` / `SlimmedItem` shape key for key, so
-consumers of that fixture need no change.
+`stats-dump.json` carries every `StatsDump` / `SlimmedItem` key WackysDatabase produced, with the
+same names and meanings, so consumers of that fixture need no change. Since **0.6.0** it is a
+**superset**: it adds `deflectionForcePerLevel` and `scaleWeightByQuality`, the two quality-scaling
+fields `SlimmedItem` omitted — without them parry force and weight cannot be computed at any level
+the source data does not already enumerate, which the Forge of Potential makes reachable. A parser
+that ignores unknown keys is unaffected.
 
 **Tested against Valheim 1.0.7 with BepInEx 5.4.23.5.** It reads only public game state, so it is
 likely to keep working across patches — but a release that moves a type between assemblies will
