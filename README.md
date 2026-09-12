@@ -39,7 +39,7 @@ it again.
 Check `BepInEx/LogOutput.log` — you should see it load, then report what it wrote:
 
 ```
-[Info   :ValDataDumper] ValDataDumper 0.5.0 loaded; output → ...\BepInEx\config\valdatadumper
+[Info   :ValDataDumper] ValDataDumper 0.6.0 loaded; output → ...\BepInEx\config\valdatadumper
 [Info   :ValDataDumper] [world-load] Valheim 1.0.7: items=1517 recipes=478 pieceTables=4 pieces=549 icons=1543 iconFailures=0 tokens=2544 stats=1517 itemExtras=1517 pieceExtras=422 → ...
 ```
 
@@ -67,7 +67,8 @@ images/items/<prefab>.png     icons, referenced from item-list as ../../images/i
 images/pieces/<prefab>.png
 recipe-stations.json          prefab -> crafting-station token + minimum station level
 stats-dump.json               per-item stats in WackysDatabase's SlimmedItem shape
-item-extras.json              stack size, teleportability, vendor value, tool tier, set effects
+item-extras.json              stack size, teleportability, vendor value, tool tier, set effects,
+                              upgrader odds (refinement forge)
 piece-extras.json             comfort, container size, build station
 localization.json             every $token encountered -> English
 manifest.json                 game version, timestamp, counts
