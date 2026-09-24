@@ -3,6 +3,32 @@
 Versions track the plugin, not the game. The Valheim version a dump came from is recorded in
 `manifest.json` and stamped into every generated markdown file.
 
+## 0.7.0
+
+Adds converter configurations and the upgrade-only flag. All changes are additive: no existing
+key moved or changed.
+
+- **`piece-extras.json` → `smelter`**: every `Smelter` component's conversions (`from` → `to`
+  prefabs), fuel item, fuel per product, seconds per product and capacities; `null` on every other
+  piece. A conversion `from` of **`null`** marks a no-source converter (the game's
+  `m_noSourceConversion`), which turns fuel alone into output. Valheim 1.0's **Frigid Kiln** works
+  this way: 5 Ice → 1 Liquid Frost.
+- **`piece-extras.json` → `cookingStation`**: every `CookingStation` component's conversions
+  (with `cookTime`), fuel item, seconds per fuel unit, slots, and the `useFuelWhileEmpty` /
+  `requireFire` flags; `null` elsewhere. Valheim 1.0's **Frost Foundry** is a cooking station. It
+  hardens a Nord *Cast* into its finished item, burning Liquid Frost by time, so a Cast costs
+  `cookTime / secPerFuel`, which is 5 in 1.0.15. `useFuelWhileEmpty` corrects the game's spelling
+  (`m_useFueldWhileEmpty`).
+- **`recipe-stations.json` → `noCraftOnlyUpgrade`**: the recipe is hidden from the craft list but
+  still drives upgrades. Every finished Nord item sets it, and patch 1.0.14 fixed a missing flag on
+  Helmet of the Protector, which is the kind of drift this makes visible.
+
+None of these numbers exist in code: the initializers (`m_fuelPerProduct = 4`,
+`m_secPerFuel = 5000`, …) are not the game's values. They live only on the prefabs, so a live dump
+is the only source that can be trusted for which Cast becomes which item and what it costs.
+
+Tested against Valheim 1.0.15.
+
 ## 0.6.0
 
 Adds the **Upgrader (Refinement Forge)** block to `item-extras.json` — the four `SharedData`
