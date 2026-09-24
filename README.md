@@ -65,17 +65,66 @@ data/objects/recipe-list.md   Jötunn recipe-list format, single-level or `Level
 data/pieces/piece-list.md     one `## <PieceTable>` section per build tool
 images/items/<prefab>.png     icons, referenced from item-list as ../../images/items/...
 images/pieces/<prefab>.png
-recipe-stations.json          prefab -> crafting-station token + minimum station level
+recipe-stations.json          recipe -> crafting-station token, minimum station level,
+                              upgrade-only flag (noCraftOnlyUpgrade)
 stats-dump.json               per-item stats, a documented superset of WackysDatabase's SlimmedItem
 item-extras.json              stack size, teleportability, vendor value, tool tier, set effects,
                               upgrader odds (refinement forge)
-piece-extras.json             comfort, container size, build station
+piece-extras.json             comfort, container size, build station, and converter configs
+                              (smelter / cookingStation: conversions, fuel, timing)
 localization.json             every $token encountered -> English
 manifest.json                 game version, timestamp, counts
 ```
 
 Every generated markdown file carries a header stamp naming the game version it came from, and
 `manifest.json` records the same version — so a half-finished or mismatched dump is detectable.
+
+### Converter configs (`piece-extras.json`, 0.7.0+)
+
+Every piece carries a `smelter` and a `cookingStation` key. Each holds the configuration of that
+component, or `null` when the piece does not have one. Items are prefab names, which you can join
+to `item-list.md`.
+
+**`smelter`** covers the Smelter, Blast Furnace, Charcoal Kiln, Eitr Refinery, Spinning Wheel,
+Windmill and Frigid Kiln. Each product burns `fuelPerProduct` of `fuelItem`; `fuelItem` is `null`
+when there is no fuel.
+
+```json
+"smelter": {
+  "fuelItem": "Coal", "fuelPerProduct": 2, "secPerProduct": 30, "maxOre": 10, "maxFuel": 20,
+  "conversions": [{ "from": "CopperOre", "to": "Copper" }]
+}
+```
+
+A `from` of `null` marks a **no-source** converter, which turns fuel alone into output. Valheim
+1.0's Frigid Kiln is one: `{ "fuelItem": "Ice", "fuelPerProduct": 5, … "conversions": [{ "from":
+null, "to": "FrozenFuel" }] }`, so 5 Ice makes 1 Liquid Frost.
+
+**`cookingStation`** covers cooking stations, the Stone Oven and Valheim 1.0's Frost Foundry.
+Fuel burns **by time**, at `1 / secPerFuel` units per second while the station works, and all
+occupied `slots` share it. `useFuelWhileEmpty` means it keeps burning with nothing inside.
+`requireFire` means it needs a lit fire underneath instead.
+
+```json
+"cookingStation": {
+  "useFuel": true, "fuelItem": "FrozenFuel", "secPerFuel": 10, "maxFuel": 20,
+  "useFuelWhileEmpty": false, "requireFire": false, "slots": 1,
+  "conversions": [{ "from": "SwordGoldUncooked", "to": "SwordGold", "cookTime": 50 }]
+}
+```
+
+The Frost Foundry hardens a Nord *Cast* into its finished item. With one slot and no idle burn,
+a Cast costs exactly `cookTime / secPerFuel` Liquid Frost (5 in Valheim 1.0.15).
+
+### Upgrade-only recipes (`recipe-stations.json`, 0.7.0+)
+
+`noCraftOnlyUpgrade: true` means the recipe is hidden from the craft list but still drives
+upgrades. Every finished Nord item sets it, because its level 1 comes from the Frost Foundry
+instead.
+
+This file is keyed by **recipe** name with the `Recipe_` prefix stripped, and that is not always
+the crafted item's prefab. For example, `ArmorGoldChest` crafts `ArmorDeepNorthHeavyChest`. Join
+through `recipe-list.md` to get the item.
 
 ## Compatibility
 
@@ -98,7 +147,7 @@ fields `SlimmedItem` omitted — without them parry force and weight cannot be c
 the source data does not already enumerate, which the Forge of Potential makes reachable. A parser
 that ignores unknown keys is unaffected.
 
-**Tested against Valheim 1.0.7 with BepInEx 5.4.23.5.** It reads only public game state, so it is
+**Tested against Valheim 1.0.7, 1.0.12 and 1.0.15 with BepInEx 5.4.23.5.** It reads only public game state, so it is
 likely to keep working across patches — but a release that moves a type between assemblies will
 need a rebuild, and Valheim 1.0 did exactly that (`Localization` moved to `assembly_guiutils`).
 

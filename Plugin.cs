@@ -22,7 +22,7 @@ namespace ValDataDumper
     {
         public const string Guid = "com.tdmack.valdatadumper";
         public const string Name = "ValDataDumper";
-        public const string PluginVersion = "0.6.0";
+        public const string PluginVersion = "0.7.0";
 
         internal static ManualLogSource Log;
 

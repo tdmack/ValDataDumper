@@ -292,7 +292,15 @@ namespace ValDataDumper.Dump
 
         // --------------------------------------------------------------- stations
 
-        /// <summary>Matches `RecipeStationDump` (`fixtures/recipe-stations.json`), keys sorted.</summary>
+        /// <summary>
+        /// Matches `RecipeStationDump` (`fixtures/recipe-stations.json`), keys sorted.
+        ///
+        /// `noCraftOnlyUpgrade` is the game's "upgrade-only" flag: the recipe is hidden from the
+        /// craft list (`InventoryGui` skips it when listing new crafts) but still drives upgrades.
+        /// Valheim 1.0 sets it on every finished Nord item, whose level 1 comes from hardening a
+        /// Cast in the Frost Foundry instead. Patch 1.0.14 fixed a missing flag on Helmet of the
+        /// Protector, which is exactly the kind of drift this field makes visible.
+        /// </summary>
         private static void WriteStations(ObjectDB db, string version, string path)
         {
             var byPrefab = new SortedDictionary<string, string>(StringComparer.Ordinal);
@@ -305,7 +313,8 @@ namespace ValDataDumper.Dump
                     "    " + Text.JsonString(prefab) + ": {\n" +
                     "      \"prefab\": " + Text.JsonString(prefab) + ",\n" +
                     "      \"craftingStation\": " + Text.JsonString(station) + ",\n" +
-                    "      \"minStationLevel\": " + r.m_minStationLevel + "\n" +
+                    "      \"minStationLevel\": " + r.m_minStationLevel + ",\n" +
+                    "      \"noCraftOnlyUpgrade\": " + (r.m_noCraftOnlyUpgrade ? "true" : "false") + "\n" +
                     "    }";
             }
 
