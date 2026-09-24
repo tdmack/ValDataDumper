@@ -11,9 +11,9 @@ namespace ValDataDumper.Dump
     ///
     /// `piece-extras.json` covers comfort, container storage, the piece's build station, and —
     /// for converters — the `Smelter` configuration (Smelter, Blast Furnace, Charcoal Kiln,
-    /// Frigid Kiln, …) and the `CookingStation` configuration (cooking racks, Frost Foundry, …):
-    /// conversions, fuel, and timing. These facets are otherwise hand-curated from the wiki, one
-    /// row at a time.
+    /// Frigid Kiln, …), the `CookingStation` configuration (cooking racks, Frost Foundry, …) and
+    /// the `Fermenter` configuration (mead base → meads): conversions, fuel, yields, and timing.
+    /// These facets are otherwise hand-curated from the wiki, one row at a time.
     ///
     /// It deliberately carries **no size**. Published piece sizes are hand-entered from the
     /// wiki with no consistent axis convention — "Wood Floor 2x2" is its x/z footprint, "Wood
@@ -73,6 +73,10 @@ namespace ValDataDumper.Dump
 
                 var cooking = go.GetComponentInChildren<CookingStation>(true);
                 sb.Append("      \"cookingStation\": ").Append(cooking != null ? CookingStationJson(cooking) : "null")
+                  .Append(",\n");
+
+                var fermenter = go.GetComponentInChildren<Fermenter>(true);
+                sb.Append("      \"fermenter\": ").Append(fermenter != null ? FermenterJson(fermenter) : "null")
                   .Append("\n    }");
                 rows[go.name] = sb.ToString();
             }
@@ -156,6 +160,36 @@ namespace ValDataDumper.Dump
                 sb.Append("          { \"from\": ").Append(Text.JsonString(conv.m_from.gameObject.name))
                   .Append(", \"to\": ").Append(Text.JsonString(conv.m_to.gameObject.name))
                   .Append(", \"cookTime\": ").Append(Text.Num(conv.m_cookTime)).Append(" }");
+                first = false;
+            }
+            sb.Append(first ? "]\n" : "\n        ]\n");
+            sb.Append("      }");
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// A `Fermenter` component's configuration: which mead base becomes which mead, how many
+        /// a batch yields, and how long it takes.
+        ///
+        /// A fermenter holds one item at a time and burns no fuel. After `fermentationDuration`
+        /// seconds, tapping it drops `producedItems` of `to` for the single `from` put in. Both
+        /// numbers exist only on the prefab — the in-code initializers (`m_producedItems = 4`,
+        /// `m_fermentationDuration = 2400`) are not the game's values — so a live dump is the only
+        /// honest source for them. Items are prefab names, joinable to `item-list.md`.
+        /// </summary>
+        private static string FermenterJson(Fermenter f)
+        {
+            var sb = new StringBuilder("{\n");
+            sb.Append("        \"fermentationDuration\": ").Append(Text.Num(f.m_fermentationDuration)).Append(",\n");
+            sb.Append("        \"conversions\": [");
+            bool first = true;
+            foreach (var conv in f.m_conversion)
+            {
+                if (conv == null || conv.m_from == null || conv.m_to == null) continue;
+                sb.Append(first ? "\n" : ",\n");
+                sb.Append("          { \"from\": ").Append(Text.JsonString(conv.m_from.gameObject.name))
+                  .Append(", \"to\": ").Append(Text.JsonString(conv.m_to.gameObject.name))
+                  .Append(", \"producedItems\": ").Append(conv.m_producedItems).Append(" }");
                 first = false;
             }
             sb.Append(first ? "]\n" : "\n        ]\n");

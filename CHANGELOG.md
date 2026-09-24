@@ -3,6 +3,25 @@
 Versions track the plugin, not the game. The Valheim version a dump came from is recorded in
 `manifest.json` and stamped into every generated markdown file.
 
+## 0.8.0
+
+Adds the Fermenter's configuration and the any-one-ingredient recipe flag. All changes are
+additive: no existing key moved or changed.
+
+- **`piece-extras.json` → `fermenter`**: every `Fermenter` component's fermentation time and
+  conversions (`from` mead base → `to` mead, with `producedItems` per batch); `null` on every
+  other piece. In Valheim 1.0.15 the Fermenter has 20 conversions at 2400 s each, and every mead
+  yields 6 except Berserker mead, which yields 3.
+- **`recipe-stations.json` → `requireOnlyOneIngredient`**: the recipe takes any one of its listed
+  resources, not all of them. Raw Fish (`Fish1`) is the only one in 1.0.15; it lists every fish.
+- **`recipe-stations.json` → `qualityResultAmountMultiplier`**: how much a higher-quality
+  ingredient raises an any-one-ingredient recipe's output (3 for Raw Fish; 1 elsewhere).
+
+As with 0.7.0, the Fermenter's numbers exist only on the prefab (the in-code initializers are
+4 per batch and 2400 s), so a live dump is the only source to trust.
+
+Tested against Valheim 1.0.15.
+
 ## 0.7.0
 
 Adds converter configurations and the upgrade-only flag. All changes are additive: no existing

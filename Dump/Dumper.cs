@@ -300,6 +300,13 @@ namespace ValDataDumper.Dump
         /// Valheim 1.0 sets it on every finished Nord item, whose level 1 comes from hardening a
         /// Cast in the Frost Foundry instead. Patch 1.0.14 fixed a missing flag on Helmet of the
         /// Protector, which is exactly the kind of drift this field makes visible.
+        ///
+        /// `requireOnlyOneIngredient` marks a recipe that takes **any one** of its listed
+        /// resources, not all of them: the craft consumes the first one the player holds. Raw Fish
+        /// (`Recipe_Fish1`) works this way, listing every fish, so reading its resources as a sum
+        /// charges one of each. For these recipes the output grows with the ingredient's quality:
+        /// `amount + ceil((quality − 1) × amount × qualityResultAmountMultiplier)` (the game's
+        /// `Recipe.GetAmount`). The multiplier is dumped for every recipe but only matters here.
         /// </summary>
         private static void WriteStations(ObjectDB db, string version, string path)
         {
@@ -314,7 +321,9 @@ namespace ValDataDumper.Dump
                     "      \"prefab\": " + Text.JsonString(prefab) + ",\n" +
                     "      \"craftingStation\": " + Text.JsonString(station) + ",\n" +
                     "      \"minStationLevel\": " + r.m_minStationLevel + ",\n" +
-                    "      \"noCraftOnlyUpgrade\": " + (r.m_noCraftOnlyUpgrade ? "true" : "false") + "\n" +
+                    "      \"noCraftOnlyUpgrade\": " + (r.m_noCraftOnlyUpgrade ? "true" : "false") + ",\n" +
+                    "      \"requireOnlyOneIngredient\": " + (r.m_requireOnlyOneIngredient ? "true" : "false") + ",\n" +
+                    "      \"qualityResultAmountMultiplier\": " + Text.Num(r.m_qualityResultAmountMultiplier) + "\n" +
                     "    }";
             }
 
