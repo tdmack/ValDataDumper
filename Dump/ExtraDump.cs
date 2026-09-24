@@ -9,8 +9,10 @@ namespace ValDataDumper.Dump
     /// <summary>
     /// Facets the Jötunn markdown format has no column for, emitted as side files.
     ///
-    /// `piece-extras.json` covers comfort, container storage, and the piece's build station —
-    /// facets that are otherwise hand-curated from the wiki, one row at a time.
+    /// `piece-extras.json` covers comfort, container storage, the piece's build station, and —
+    /// for converters (Smelter, Blast Furnace, Charcoal Kiln, Frost Foundry, …) — the `Smelter`
+    /// configuration: conversions, fuel, and timing. These facets are otherwise hand-curated
+    /// from the wiki, one row at a time.
     ///
     /// It deliberately carries **no size**. Published piece sizes are hand-entered from the
     /// wiki with no consistent axis convention — "Wood Floor 2x2" is its x/z footprint, "Wood
@@ -60,11 +62,54 @@ namespace ValDataDumper.Dump
                     : "null").Append(",\n");
 
                 sb.Append("      \"station\": ").Append(Text.JsonString(piece.m_craftingStation != null
-                    ? piece.m_craftingStation.m_name : "")).Append("\n    }");
+                    ? piece.m_craftingStation.m_name : "")).Append(",\n");
+
+                // `GetComponentInChildren(true)` includes the root and inactive children. Don't
+                // use `??` between Unity lookups: UnityEngine.Object overrides ==, not ??.
+                var smelter = go.GetComponentInChildren<Smelter>(true);
+                sb.Append("      \"smelter\": ").Append(smelter != null ? SmelterJson(smelter) : "null")
+                  .Append("\n    }");
                 rows[go.name] = sb.ToString();
             }
             Write(path, version, "pieces", rows);
             return rows.Count;
+        }
+
+        /// <summary>
+        /// A `Smelter` component's configuration: what it converts, what it burns, and how fast.
+        ///
+        /// Every conversion is one `from` → one `to`. Each product burns `fuelPerProduct` units of
+        /// `fuelItem` (fuel drains at `fuelPerProduct / secPerProduct` per second), and `fuelItem`
+        /// is null for converters with no fuel (Charcoal Kiln, Windmill, Spinning Wheel). All
+        /// items are prefab names, joinable to `item-list.md`.
+        ///
+        /// In Valheim 1.0 this is how the Frost Foundry turns a Cast into its finished Nord item,
+        /// fuelled by Liquid Frost (`FrozenFuel`). Those numbers exist only on the prefab — the
+        /// in-code initializers (`m_fuelPerProduct = 4`, `m_secPerProduct = 10`) are not the
+        /// game's values — so a live dump is the only honest source for them.
+        /// </summary>
+        private static string SmelterJson(Smelter s)
+        {
+            var sb = new StringBuilder("{\n");
+            sb.Append("        \"fuelItem\": ").Append(s.m_fuelItem != null
+                ? Text.JsonString(s.m_fuelItem.gameObject.name) : "null").Append(",\n");
+            sb.Append("        \"fuelPerProduct\": ").Append(s.m_fuelPerProduct).Append(",\n");
+            sb.Append("        \"secPerProduct\": ").Append(Text.Num(s.m_secPerProduct)).Append(",\n");
+            sb.Append("        \"maxOre\": ").Append(s.m_maxOre).Append(",\n");
+            sb.Append("        \"maxFuel\": ").Append(s.m_maxFuel).Append(",\n");
+            sb.Append("        \"conversions\": [");
+            bool first = true;
+            foreach (var c in s.m_conversion)
+            {
+                if (c == null || c.m_from == null || c.m_to == null) continue;
+                sb.Append(first ? "\n" : ",\n");
+                sb.Append("          { \"from\": ").Append(Text.JsonString(c.m_from.gameObject.name))
+                  .Append(", \"to\": ").Append(Text.JsonString(c.m_to.gameObject.name)).Append(" }");
+                first = false;
+            }
+            sb.Append(first ? "]\n" : "\n        ]\n");
+            sb.Append("      }");
+            return sb.ToString();
         }
 
         /// <summary>Write `item-extras.json`, keyed by item prefab.</summary>
