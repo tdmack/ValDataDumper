@@ -66,12 +66,13 @@ data/pieces/piece-list.md     one `## <PieceTable>` section per build tool
 images/items/<prefab>.png     icons, referenced from item-list as ../../images/items/...
 images/pieces/<prefab>.png
 recipe-stations.json          recipe -> crafting-station token, minimum station level,
-                              upgrade-only flag (noCraftOnlyUpgrade)
+                              upgrade-only flag (noCraftOnlyUpgrade), any-one-ingredient flag
+                              (requireOnlyOneIngredient, qualityResultAmountMultiplier)
 stats-dump.json               per-item stats, a documented superset of WackysDatabase's SlimmedItem
 item-extras.json              stack size, teleportability, vendor value, tool tier, set effects,
                               upgrader odds (refinement forge)
 piece-extras.json             comfort, container size, build station, and converter configs
-                              (smelter / cookingStation: conversions, fuel, timing)
+                              (smelter / cookingStation / fermenter: conversions, fuel, yields, timing)
 localization.json             every $token encountered -> English
 manifest.json                 game version, timestamp, counts
 ```
@@ -81,7 +82,8 @@ Every generated markdown file carries a header stamp naming the game version it 
 
 ### Converter configs (`piece-extras.json`, 0.7.0+)
 
-Every piece carries a `smelter` and a `cookingStation` key. Each holds the configuration of that
+Every piece carries a `smelter` and a `cookingStation` key, and from 0.8.0 a `fermenter` key.
+Each holds the configuration of that
 component, or `null` when the piece does not have one. Items are prefab names, which you can join
 to `item-list.md`.
 
@@ -116,6 +118,20 @@ occupied `slots` share it. `useFuelWhileEmpty` means it keeps burning with nothi
 The Frost Foundry hardens a Nord *Cast* into its finished item. With one slot and no idle burn,
 a Cast costs exactly `cookTime / secPerFuel` Liquid Frost (5 in Valheim 1.0.15).
 
+**`fermenter`** (0.8.0+) covers the Fermenter, which turns a mead base into meads. It holds one
+item at a time and burns no fuel: after `fermentationDuration` seconds, tapping it gives
+`producedItems` of `to` for the one `from` put in.
+
+```json
+"fermenter": {
+  "fermentationDuration": 2400,
+  "conversions": [{ "from": "MeadBaseHealthMinor", "to": "MeadHealthMinor", "producedItems": 6 }]
+}
+```
+
+In Valheim 1.0.15 every mead yields 6 per batch except Berserker mead (`MeadBzerker`), which
+yields 3.
+
 ### Upgrade-only recipes (`recipe-stations.json`, 0.7.0+)
 
 `noCraftOnlyUpgrade: true` means the recipe is hidden from the craft list but still drives
@@ -125,6 +141,18 @@ instead.
 This file is keyed by **recipe** name with the `Recipe_` prefix stripped, and that is not always
 the crafted item's prefab. For example, `ArmorGoldChest` crafts `ArmorDeepNorthHeavyChest`. Join
 through `recipe-list.md` to get the item.
+
+### Any-one-ingredient recipes (`recipe-stations.json`, 0.8.0+)
+
+`requireOnlyOneIngredient: true` means the recipe takes **any one** of its listed resources, not
+all of them: crafting uses the first one you hold. `recipe-list.md` still lists every resource,
+so summing them over-counts. In Valheim 1.0.15 only Raw Fish (`Fish1`) works this way, and it
+lists every fish.
+
+For these recipes the output grows with the ingredient's quality:
+`amount + ceil((quality − 1) × amount × qualityResultAmountMultiplier)`. Raw Fish's multiplier is
+3, so a higher-star fish gives more Raw Fish. The multiplier is dumped for every recipe but is 1,
+and unused, everywhere else.
 
 ## Compatibility
 
