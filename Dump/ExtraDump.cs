@@ -10,9 +10,10 @@ namespace ValDataDumper.Dump
     /// Facets the Jötunn markdown format has no column for, emitted as side files.
     ///
     /// `piece-extras.json` covers comfort, container storage, the piece's build station, and —
-    /// for converters (Smelter, Blast Furnace, Charcoal Kiln, Frost Foundry, …) — the `Smelter`
-    /// configuration: conversions, fuel, and timing. These facets are otherwise hand-curated
-    /// from the wiki, one row at a time.
+    /// for converters — the `Smelter` configuration (Smelter, Blast Furnace, Charcoal Kiln,
+    /// Frigid Kiln, …) and the `CookingStation` configuration (cooking racks, Frost Foundry, …):
+    /// conversions, fuel, and timing. These facets are otherwise hand-curated from the wiki, one
+    /// row at a time.
     ///
     /// It deliberately carries **no size**. Published piece sizes are hand-entered from the
     /// wiki with no consistent axis convention — "Wood Floor 2x2" is its x/z footprint, "Wood
@@ -68,6 +69,10 @@ namespace ValDataDumper.Dump
                 // use `??` between Unity lookups: UnityEngine.Object overrides ==, not ??.
                 var smelter = go.GetComponentInChildren<Smelter>(true);
                 sb.Append("      \"smelter\": ").Append(smelter != null ? SmelterJson(smelter) : "null")
+                  .Append(",\n");
+
+                var cooking = go.GetComponentInChildren<CookingStation>(true);
+                sb.Append("      \"cookingStation\": ").Append(cooking != null ? CookingStationJson(cooking) : "null")
                   .Append("\n    }");
                 rows[go.name] = sb.ToString();
             }
@@ -83,10 +88,12 @@ namespace ValDataDumper.Dump
         /// is null for converters with no fuel (Charcoal Kiln, Windmill, Spinning Wheel). All
         /// items are prefab names, joinable to `item-list.md`.
         ///
-        /// In Valheim 1.0 this is how the Frost Foundry turns a Cast into its finished Nord item,
-        /// fuelled by Liquid Frost (`FrozenFuel`). Those numbers exist only on the prefab — the
-        /// in-code initializers (`m_fuelPerProduct = 4`, `m_secPerProduct = 10`) are not the
-        /// game's values — so a live dump is the only honest source for them.
+        /// A conversion's `from` is **null** for a no-source converter — the game's
+        /// `m_noSourceConversion`, set in `Awake` whenever a conversion has no input — which
+        /// turns fuel alone into output. Valheim 1.0's Frigid Kiln works this way: Ice is its
+        /// fuel and Liquid Frost (`FrozenFuel`) its product. Those numbers exist only on the
+        /// prefab — the in-code initializers (`m_fuelPerProduct = 4`, `m_secPerProduct = 10`) are
+        /// not the game's values — so a live dump is the only honest source for them.
         /// </summary>
         private static string SmelterJson(Smelter s)
         {
@@ -101,10 +108,54 @@ namespace ValDataDumper.Dump
             bool first = true;
             foreach (var c in s.m_conversion)
             {
-                if (c == null || c.m_from == null || c.m_to == null) continue;
+                if (c == null || c.m_to == null) continue;
                 sb.Append(first ? "\n" : ",\n");
-                sb.Append("          { \"from\": ").Append(Text.JsonString(c.m_from.gameObject.name))
+                sb.Append("          { \"from\": ").Append(c.m_from != null
+                    ? Text.JsonString(c.m_from.gameObject.name) : "null")
                   .Append(", \"to\": ").Append(Text.JsonString(c.m_to.gameObject.name)).Append(" }");
+                first = false;
+            }
+            sb.Append(first ? "]\n" : "\n        ]\n");
+            sb.Append("      }");
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// A `CookingStation` component's configuration: what each slot turns into what, how long
+        /// it takes, and — for fuelled stations — what it burns.
+        ///
+        /// Unlike a `Smelter`, fuel is burned **by time**, not per product: while the station is
+        /// working it drains `1 / secPerFuel` units per second, shared by every occupied slot.
+        /// When `useFuelWhileEmpty` is true it keeps burning with nothing inside. Stations with
+        /// `requireFire` need a lit fire beneath instead (cooking racks). `slots` is how many
+        /// items cook at once.
+        ///
+        /// In Valheim 1.0 this is how the Frost Foundry hardens a Cast (`…Uncooked`) into its
+        /// finished Nord item, burning Liquid Frost (`FrozenFuel`) — so a single Cast costs
+        /// `cookTime / secPerFuel` Liquid Frost when it cooks alone.
+        ///
+        /// `useFuelWhileEmpty` corrects the game's field spelling (`m_useFueldWhileEmpty`).
+        /// </summary>
+        private static string CookingStationJson(CookingStation c)
+        {
+            var sb = new StringBuilder("{\n");
+            sb.Append("        \"useFuel\": ").Append(c.m_useFuel ? "true" : "false").Append(",\n");
+            sb.Append("        \"fuelItem\": ").Append(c.m_fuelItem != null
+                ? Text.JsonString(c.m_fuelItem.gameObject.name) : "null").Append(",\n");
+            sb.Append("        \"secPerFuel\": ").Append(c.m_secPerFuel).Append(",\n");
+            sb.Append("        \"maxFuel\": ").Append(c.m_maxFuel).Append(",\n");
+            sb.Append("        \"useFuelWhileEmpty\": ").Append(c.m_useFueldWhileEmpty ? "true" : "false").Append(",\n");
+            sb.Append("        \"requireFire\": ").Append(c.m_requireFire ? "true" : "false").Append(",\n");
+            sb.Append("        \"slots\": ").Append(c.m_slots != null ? c.m_slots.Length : 0).Append(",\n");
+            sb.Append("        \"conversions\": [");
+            bool first = true;
+            foreach (var conv in c.m_conversion)
+            {
+                if (conv == null || conv.m_from == null || conv.m_to == null) continue;
+                sb.Append(first ? "\n" : ",\n");
+                sb.Append("          { \"from\": ").Append(Text.JsonString(conv.m_from.gameObject.name))
+                  .Append(", \"to\": ").Append(Text.JsonString(conv.m_to.gameObject.name))
+                  .Append(", \"cookTime\": ").Append(Text.Num(conv.m_cookTime)).Append(" }");
                 first = false;
             }
             sb.Append(first ? "]\n" : "\n        ]\n");
