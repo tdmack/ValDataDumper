@@ -117,6 +117,10 @@ namespace ValDataDumper.Dump
             // (Character.ApplyDamage → HitData.GetTotalStaggerDamage; Attack.ModifyDamage), and the
             // two multipliers live on each weapon's prefab, so stagger can't be computed without them.
             Line("attacks", AttacksJson(sd, inner));
+            // 0.10.0: the item's own damage-taken modifiers while worn or held — the Wolf
+            // Armor Chest's frost resistance, the Fenris set's… These are not status effects,
+            // so status-effects.json can't carry them. Same shape as a status effect's `mods`.
+            Line("damageModifiers", EffectDump.Mods(sd.m_damageModifiers));
 
             if (sd.m_food > 0f)
             {

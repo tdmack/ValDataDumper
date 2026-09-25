@@ -70,7 +70,8 @@ recipe-stations.json          recipe -> the item it makes (item, amount), enable
                               upgrade-only flag (noCraftOnlyUpgrade), any-one-ingredient flag
                               (requireOnlyOneIngredient, qualityResultAmountMultiplier)
 stats-dump.json               per-item stats, a documented superset of WackysDatabase's SlimmedItem
-                              (0.10.0+: each item's primary/secondary attack multipliers)
+                              (0.10.0+: each item's primary/secondary attack multipliers and
+                              its own damage-taken modifiers)
 item-extras.json              stack size, teleportability, vendor value, tool tier, set effects,
                               upgrader odds (refinement forge)
 piece-extras.json             comfort, container size, build station, and converter configs

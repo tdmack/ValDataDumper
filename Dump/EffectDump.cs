@@ -103,7 +103,7 @@ namespace ValDataDumper.Dump
             ", \"frost\": " + Text.Num(d.m_frost) + ", \"lightning\": " + Text.Num(d.m_lightning) +
             ", \"poison\": " + Text.Num(d.m_poison) + ", \"spirit\": " + Text.Num(d.m_spirit) + " }";
 
-        private static string Mods(List<HitData.DamageModPair> mods)
+        internal static string Mods(List<HitData.DamageModPair> mods)
         {
             if (mods == null || mods.Count == 0) return "[]";
             var parts = new List<string>();
