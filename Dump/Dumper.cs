@@ -11,7 +11,7 @@ namespace ValDataDumper.Dump
     /// <summary>Counts reported after a dump.</summary>
     internal sealed class DumpStats
     {
-        public int Items, Recipes, PieceTables, Pieces, Icons, IconFailures, Tokens, Stats, PieceExtras, ItemExtras;
+        public int Items, Recipes, PieceTables, Pieces, Icons, IconFailures, Tokens, Stats, PieceExtras, ItemExtras, StatusEffects;
     }
 
     /// <summary>
@@ -47,6 +47,7 @@ namespace ValDataDumper.Dump
             // Facets the markdown format has no column for (see StatsDump / ExtraDump).
             stats.Stats = StatsDump.Write(items, version, Path.Combine(outDir, "stats-dump.json"));
             stats.ItemExtras = ExtraDump.WriteItems(items, version, Path.Combine(outDir, "item-extras.json"));
+            stats.StatusEffects = EffectDump.Write(items, version, Path.Combine(outDir, "status-effects.json"));
             stats.PieceExtras = ExtraDump.WritePieces(AllPieceObjects(items), version, Path.Combine(outDir, "piece-extras.json"));
             stats.Tokens = loc.Write(Path.Combine(outDir, "localization.json"));
             WriteManifest(version, stats, Path.Combine(outDir, "manifest.json"));
@@ -351,7 +352,8 @@ namespace ValDataDumper.Dump
                 "  \"iconFailures\": " + s.IconFailures + ",\n" +
                 "  \"stats\": " + s.Stats + ",\n" +
                 "  \"itemExtras\": " + s.ItemExtras + ",\n" +
-                "  \"pieceExtras\": " + s.PieceExtras + "\n" +
+                "  \"pieceExtras\": " + s.PieceExtras + ",\n" +
+                "  \"statusEffects\": " + s.StatusEffects + "\n" +
                 "}\n";
             File.WriteAllText(path, json, Utf8NoBom);
         }

@@ -35,7 +35,7 @@ namespace ValDataDumper.Dump
     internal static class ExtraDump
     {
         /// <summary>Localize a token, tolerating a null Localization (returns the raw token).</summary>
-        private static string Loc(string token)
+        internal static string Loc(string token)
         {
             if (string.IsNullOrEmpty(token)) return "";
             return Localization.instance != null ? Localization.instance.Localize(token) : token;
@@ -249,7 +249,7 @@ namespace ValDataDumper.Dump
             return rows.Count;
         }
 
-        private static void Write(string path, string version, string key, SortedDictionary<string, string> rows)
+        internal static void Write(string path, string version, string key, SortedDictionary<string, string> rows)
         {
             var sb = new StringBuilder();
             sb.Append("{\n  \"pinnedGameVersion\": ").Append(Text.JsonString(version))
