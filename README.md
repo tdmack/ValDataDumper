@@ -169,6 +169,17 @@ name `item-extras.json` uses. Each row has the localized `name` and `tooltip`, t
 `skillLevelModifier2`. `percentDamage` is a per-type damage bonus (`0.1` = +10%), and `mods` are
 damage-**taken** modifiers such as `{ "type": "Fire", "modifier": "Resistant" }`.
 
+The Troll armour set bonus, with its neutral fields left out:
+
+```json
+"SetEffect_TrollArmor": {
+  "name": "Sneaky", "tooltip": "Makes you more sneaky.", "type": "SE_Stats", "ttl": 0,
+  "stats": { "skillLevel": "Sneak", "skillLevelModifier": 15, … }
+}
+```
+
+The tooltip alone doesn't say "+15"; only the stats do.
+
 ## Compatibility
 
 Output is intended as a drop-in for JotunnDoc's, with **one documented difference**:
