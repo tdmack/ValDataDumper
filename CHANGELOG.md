@@ -3,6 +3,21 @@
 Versions track the plugin, not the game. The Valheim version a dump came from is recorded in
 `manifest.json` and stamped into every generated markdown file.
 
+## 0.10.0
+
+Says which item each recipe makes, and dumps weapon attacks. All changes are additive: no
+existing key moved or changed.
+
+- **`recipe-stations.json`** gains `item` (the prefab the recipe makes — `m_item`), `amount`
+  (how many one craft makes) and `enabled`. The file is keyed by recipe name minus `Recipe_`,
+  which is not always the item's prefab (`Recipe_Battleaxe_Crystal` makes `BattleaxeCrystal`);
+  joining on the key picked the wrong prefab wherever several share a display name.
+- **`stats-dump.json`** gains `attacks: { primary, secondary }` on every item: attack type and
+  animation, damage, stagger and force multipliers, stamina and eitr cost. With them, a weapon's
+  stagger per hit can be computed from its damage.
+
+Tested against Valheim 1.0.15.
+
 ## 0.9.0
 
 Adds the status effects items refer to. All changes are additive: no existing key moved or

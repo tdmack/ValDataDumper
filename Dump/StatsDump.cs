@@ -41,6 +41,36 @@ namespace ValDataDumper.Dump
             return sb.Append(indent).Append('}').ToString();
         }
 
+        /// <summary>
+        /// One attack's multipliers and cost, or `null` when the item has none. `attackAnimation`
+        /// is empty on a secondary attack the item doesn't really have (every item carries a
+        /// default `Attack` object), so consumers treat an empty animation as "no such attack".
+        /// </summary>
+        private static string AttackJson(Attack a, string indent)
+        {
+            if (a == null) return "null";
+            string inner = indent + "  ";
+            return "{\n" +
+                inner + "\"attackType\": " + Text.JsonString(a.m_attackType.ToString()) + ",\n" +
+                inner + "\"attackAnimation\": " + Text.JsonString(a.m_attackAnimation ?? "") + ",\n" +
+                inner + "\"damageMultiplier\": " + Text.Num(a.m_damageMultiplier) + ",\n" +
+                inner + "\"staggerMultiplier\": " + Text.Num(a.m_staggerMultiplier) + ",\n" +
+                inner + "\"forceMultiplier\": " + Text.Num(a.m_forceMultiplier) + ",\n" +
+                inner + "\"attackStamina\": " + Text.Num(a.m_attackStamina) + ",\n" +
+                inner + "\"attackEitr\": " + Text.Num(a.m_attackEitr) + "\n" +
+                indent + "}";
+        }
+
+        /// <summary>`{ "primary": …, "secondary": … }` — see <see cref="AttackJson"/>.</summary>
+        private static string AttacksJson(ItemDrop.ItemData.SharedData sd, string indent)
+        {
+            string inner = indent + "  ";
+            return "{\n" +
+                inner + "\"primary\": " + AttackJson(sd.m_attack, inner) + ",\n" +
+                inner + "\"secondary\": " + AttackJson(sd.m_secondaryAttack, inner) + "\n" +
+                indent + "}";
+        }
+
         /// <summary>Serialize one item's shared data as a `SlimmedItem`.</summary>
         private static string SlimJson(ItemDrop.ItemData.SharedData sd, string indent)
         {
@@ -82,6 +112,11 @@ namespace ValDataDumper.Dump
             Line("eitrRegen", Text.Num(sd.m_eitrRegenModifier));
             Line("seEquip", Text.JsonString(sd.m_equipStatusEffect != null ? sd.m_equipStatusEffect.name : ""));
             Line("seSetEquip", Text.JsonString(sd.m_setStatusEffect != null ? sd.m_setStatusEffect.name : ""));
+            // 0.10.0: the primary and secondary attack. Stagger dealt per hit is
+            // (blunt + slash + pierce + lightning) × m_damageMultiplier × m_staggerMultiplier
+            // (Character.ApplyDamage → HitData.GetTotalStaggerDamage; Attack.ModifyDamage), and the
+            // two multipliers live on each weapon's prefab, so stagger can't be computed without them.
+            Line("attacks", AttacksJson(sd, inner));
 
             if (sd.m_food > 0f)
             {
