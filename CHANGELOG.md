@@ -3,6 +3,23 @@
 Versions track the plugin, not the game. The Valheim version a dump came from is recorded in
 `manifest.json` and stamped into every generated markdown file.
 
+## 0.11.0
+
+Dumps the game's seasonal content. All changes are additive: no existing key moved or changed.
+
+- **New `seasonal.json`**: every `SeasonalItemGroup` (Midsummer, Halloween, Yule, …) with its
+  start and end `{ day, month }`, the piece prefabs it unlocks and the recipes it enables (recipe
+  name and the `item` prefab it makes). The groups are found with
+  `Resources.FindObjectsOfTypeAll` and read through public members only.
+- **`piece-extras.json`** gains `enabled` (`Piece.m_enabled`). Seasonal pieces are `false`
+  outside their event; the game switches them on while a group's dates cover the current date.
+- **`manifest.json`** gains a `seasonalGroups` count.
+
+In Valheim 1.0.16 there are three groups (Halloween, Midsummer, Yule) that unlock 9 pieces and
+2 recipes. No other piece is disabled.
+
+Tested against Valheim 1.0.16.
+
 ## 0.10.0
 
 Says which item each recipe makes, and dumps weapon attacks. All changes are additive: no
