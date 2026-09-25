@@ -15,6 +15,11 @@ Dumps the game's seasonal content. All changes are additive: no existing key mov
   outside their event; the game switches them on while a group's dates cover the current date.
 - **`manifest.json`** gains a `seasonalGroups` count.
 
+In Valheim 1.0.16 there are three groups (Halloween, Midsummer, Yule) that unlock 9 pieces and
+2 recipes. No other piece is disabled.
+
+Tested against Valheim 1.0.16.
+
 ## 0.10.0
 
 Says which item each recipe makes, and dumps weapon attacks. All changes are additive: no

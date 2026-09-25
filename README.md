@@ -212,8 +212,12 @@ because an event recurs; if the end month comes before the start month, the even
 new year. `pieces` are piece prefab names (joinable to `piece-extras.json`), and each entry in
 `recipes` gives the recipe's name and the `item` prefab it makes.
 
+Valheim 1.0.16 has three groups: **Halloween** (1 Oct – 6 Nov), **Midsummer** (1 Jun – 6 Jul) and
+**Yule** (1 Dec – 6 Jan, running over the new year). Between them they unlock 9 pieces and 2
+recipes, and those 9 are the only disabled pieces in the dump.
+
 ```json
-"<group name>": {
+"Halloween": {
   "start": { "day": 1, "month": 10 }, "end": { "day": 6, "month": 11 },
   "pieces": ["piece_jackoturnip"],
   "recipes": [{ "name": "Recipe_HelmetPointyHat", "item": "HelmetPointyHat" }]
@@ -241,7 +245,7 @@ fields `SlimmedItem` omitted — without them parry force and weight cannot be c
 the source data does not already enumerate, which the Forge of Potential makes reachable. A parser
 that ignores unknown keys is unaffected.
 
-**Tested against Valheim 1.0.7, 1.0.12 and 1.0.15 with BepInEx 5.4.23.5.** It reads only public game state, so it is
+**Tested against Valheim 1.0.7, 1.0.12, 1.0.15 and 1.0.16 with BepInEx 5.4.23.5.** It reads only public game state, so it is
 likely to keep working across patches — but a release that moves a type between assemblies will
 need a rebuild, and Valheim 1.0 did exactly that (`Localization` moved to `assembly_guiutils`).
 
