@@ -65,10 +65,13 @@ data/objects/recipe-list.md   Jötunn recipe-list format, single-level or `Level
 data/pieces/piece-list.md     one `## <PieceTable>` section per build tool
 images/items/<prefab>.png     icons, referenced from item-list as ../../images/items/...
 images/pieces/<prefab>.png
-recipe-stations.json          recipe -> crafting-station token, minimum station level,
+recipe-stations.json          recipe -> the item it makes (item, amount), enabled flag,
+                              crafting-station token, minimum station level,
                               upgrade-only flag (noCraftOnlyUpgrade), any-one-ingredient flag
                               (requireOnlyOneIngredient, qualityResultAmountMultiplier)
 stats-dump.json               per-item stats, a documented superset of WackysDatabase's SlimmedItem
+                              (0.10.0+: each item's primary/secondary attack multipliers and
+                              its own damage-taken modifiers)
 item-extras.json              stack size, teleportability, vendor value, tool tier, set effects,
                               upgrader odds (refinement forge)
 piece-extras.json             comfort, container size, build station, and converter configs
@@ -141,8 +144,21 @@ upgrades. Every finished Nord item sets it, because its level 1 comes from the F
 instead.
 
 This file is keyed by **recipe** name with the `Recipe_` prefix stripped, and that is not always
-the crafted item's prefab. For example, `ArmorGoldChest` crafts `ArmorDeepNorthHeavyChest`. Join
-through `recipe-list.md` to get the item.
+the crafted item's prefab. For example, `ArmorGoldChest` crafts `ArmorDeepNorthHeavyChest`. Since
+**0.10.0** each row says so directly: `item` is the prefab the recipe makes, and `amount` how many
+one craft makes (Iron Nails: 10). Join on `item`, not on the key. `enabled: false` marks a recipe
+the game has but never offers.
+
+### Attacks (`stats-dump.json`, 0.10.0+)
+
+Every item carries `attacks: { primary, secondary }`, each with the attack's `attackType`,
+`attackAnimation`, `damageMultiplier`, `staggerMultiplier`, `forceMultiplier`, `attackStamina` and
+`attackEitr`. Every item has a default secondary `Attack` object, so an empty `attackAnimation`
+means the item has no real secondary attack.
+
+Stagger is not an item field. The game computes it per hit as
+`(blunt + slash + pierce + lightning) × damageMultiplier × staggerMultiplier`; fire, frost, poison
+and spirit never stagger. The two multipliers are what make that computable.
 
 ### Any-one-ingredient recipes (`recipe-stations.json`, 0.8.0+)
 

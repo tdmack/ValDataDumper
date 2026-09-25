@@ -26,7 +26,7 @@
     <LangVersion>latest</LangVersion>
     <AssemblyName>ValDataDumper</AssemblyName>
     <RootNamespace>ValDataDumper</RootNamespace>
-    <Version>0.9.0</Version>
+    <Version>0.10.0</Version>
     <Nullable>disable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
     <DebugType>none</DebugType>

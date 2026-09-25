@@ -308,6 +308,13 @@ namespace ValDataDumper.Dump
         /// charges one of each. For these recipes the output grows with the ingredient's quality:
         /// `amount + ceil((quality − 1) × amount × qualityResultAmountMultiplier)` (the game's
         /// `Recipe.GetAmount`). The multiplier is dumped for every recipe but only matters here.
+        ///
+        /// `item` is the prefab the recipe actually makes (`m_item`), and `amount` how many one
+        /// craft makes (`m_amount`). The key — the recipe's name minus `Recipe_` — is kept for
+        /// compatibility, but it is **not** always the item's prefab: `Recipe_Battleaxe_Crystal`
+        /// makes `BattleaxeCrystal`, `Recipe_SwordFire` makes `SwordDyrnwyn`, and a consumer that
+        /// joins on the key picks the wrong prefab wherever several share a display name.
+        /// `enabled` is `m_enabled`; a disabled recipe is in the ObjectDB but never offered.
         /// </summary>
         private static void WriteStations(ObjectDB db, string version, string path)
         {
@@ -317,9 +324,13 @@ namespace ValDataDumper.Dump
                 if (r == null) continue;
                 string prefab = r.name.StartsWith("Recipe_") ? r.name.Substring("Recipe_".Length) : r.name;
                 string station = r.m_craftingStation != null ? r.m_craftingStation.m_name : "";
+                string item = r.m_item != null ? r.m_item.gameObject.name : "";
                 byPrefab[prefab] =
                     "    " + Text.JsonString(prefab) + ": {\n" +
                     "      \"prefab\": " + Text.JsonString(prefab) + ",\n" +
+                    "      \"item\": " + Text.JsonString(item) + ",\n" +
+                    "      \"amount\": " + r.m_amount + ",\n" +
+                    "      \"enabled\": " + (r.m_enabled ? "true" : "false") + ",\n" +
                     "      \"craftingStation\": " + Text.JsonString(station) + ",\n" +
                     "      \"minStationLevel\": " + r.m_minStationLevel + ",\n" +
                     "      \"noCraftOnlyUpgrade\": " + (r.m_noCraftOnlyUpgrade ? "true" : "false") + ",\n" +
