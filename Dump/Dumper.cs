@@ -11,7 +11,7 @@ namespace ValDataDumper.Dump
     /// <summary>Counts reported after a dump.</summary>
     internal sealed class DumpStats
     {
-        public int Items, Recipes, PieceTables, Pieces, Icons, IconFailures, Tokens, Stats, PieceExtras, ItemExtras, StatusEffects;
+        public int Items, Recipes, PieceTables, Pieces, Icons, IconFailures, Tokens, Stats, PieceExtras, ItemExtras, StatusEffects, SeasonalGroups;
     }
 
     /// <summary>
@@ -49,6 +49,7 @@ namespace ValDataDumper.Dump
             stats.ItemExtras = ExtraDump.WriteItems(items, version, Path.Combine(outDir, "item-extras.json"));
             stats.StatusEffects = EffectDump.Write(items, version, Path.Combine(outDir, "status-effects.json"));
             stats.PieceExtras = ExtraDump.WritePieces(AllPieceObjects(items), version, Path.Combine(outDir, "piece-extras.json"));
+            stats.SeasonalGroups = SeasonalDump.Write(version, Path.Combine(outDir, "seasonal.json"));
             stats.Tokens = loc.Write(Path.Combine(outDir, "localization.json"));
             WriteManifest(version, stats, Path.Combine(outDir, "manifest.json"));
             return stats;
@@ -364,7 +365,8 @@ namespace ValDataDumper.Dump
                 "  \"stats\": " + s.Stats + ",\n" +
                 "  \"itemExtras\": " + s.ItemExtras + ",\n" +
                 "  \"pieceExtras\": " + s.PieceExtras + ",\n" +
-                "  \"statusEffects\": " + s.StatusEffects + "\n" +
+                "  \"statusEffects\": " + s.StatusEffects + ",\n" +
+                "  \"seasonalGroups\": " + s.SeasonalGroups + "\n" +
                 "}\n";
             File.WriteAllText(path, json, Utf8NoBom);
         }

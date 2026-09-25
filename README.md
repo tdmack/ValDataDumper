@@ -74,10 +74,13 @@ stats-dump.json               per-item stats, a documented superset of WackysDat
                               its own damage-taken modifiers)
 item-extras.json              stack size, teleportability, vendor value, tool tier, set effects,
                               upgrader odds (refinement forge)
-piece-extras.json             comfort, container size, build station, and converter configs
-                              (smelter / cookingStation / fermenter: conversions, fuel, yields, timing)
+piece-extras.json             comfort, container size, build station, enabled flag (0.11.0+), and
+                              converter configs (smelter / cookingStation / fermenter: conversions,
+                              fuel, yields, timing)
 status-effects.json           every status effect an item refers to (set bonus, equip, consume):
                               name, tooltip, duration, and the SE_Stats modifiers
+seasonal.json                 seasonal event groups (0.11.0+): dates, the pieces and recipes each
+                              one unlocks
 localization.json             every $token encountered -> English
 manifest.json                 game version, timestamp, counts
 ```
@@ -195,6 +198,27 @@ The Troll armour set bonus, with its neutral fields left out:
 ```
 
 The tooltip alone doesn't say "+15"; only the stats do.
+
+### Seasonal content (`seasonal.json`, 0.11.0+)
+
+Some pieces and recipes exist only during an event: Midsummer, Halloween, Yule. The game keeps
+each event in a `SeasonalItemGroup`, with a start and end date and the pieces and recipes it
+unlocks. Outside the event those pieces and recipes are switched off, so a dump taken on an
+ordinary day shows them as disabled (`enabled: false` in `piece-extras.json` and
+`recipe-stations.json`). This file says which event switches each one on.
+
+Rows are keyed by the group's asset name. `start` and `end` are `{ day, month }` with no year,
+because an event recurs; if the end month comes before the start month, the event runs over the
+new year. `pieces` are piece prefab names (joinable to `piece-extras.json`), and each entry in
+`recipes` gives the recipe's name and the `item` prefab it makes.
+
+```json
+"<group name>": {
+  "start": { "day": 1, "month": 10 }, "end": { "day": 6, "month": 11 },
+  "pieces": ["piece_jackoturnip"],
+  "recipes": [{ "name": "Recipe_HelmetPointyHat", "item": "HelmetPointyHat" }]
+}
+```
 
 ## Compatibility
 

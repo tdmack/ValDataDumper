@@ -9,7 +9,8 @@ namespace ValDataDumper.Dump
     /// <summary>
     /// Facets the Jötunn markdown format has no column for, emitted as side files.
     ///
-    /// `piece-extras.json` covers comfort, container storage, the piece's build station, and —
+    /// `piece-extras.json` covers comfort, container storage, the piece's build station, whether
+    /// the piece is enabled (`m_enabled`; seasonal pieces are off outside their event), and —
     /// for converters — the `Smelter` configuration (Smelter, Blast Furnace, Charcoal Kiln,
     /// Frigid Kiln, …), the `CookingStation` configuration (cooking racks, Frost Foundry, …) and
     /// the `Fermenter` configuration (mead base → meads): conversions, fuel, yields, and timing.
@@ -64,6 +65,9 @@ namespace ValDataDumper.Dump
 
                 sb.Append("      \"station\": ").Append(Text.JsonString(piece.m_craftingStation != null
                     ? piece.m_craftingStation.m_name : "")).Append(",\n");
+
+                // False for seasonal pieces outside their event (see SeasonalDump) and cut ones.
+                sb.Append("      \"enabled\": ").Append(piece.m_enabled ? "true" : "false").Append(",\n");
 
                 // `GetComponentInChildren(true)` includes the root and inactive children. Don't
                 // use `??` between Unity lookups: UnityEngine.Object overrides ==, not ??.
