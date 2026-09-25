@@ -73,6 +73,8 @@ item-extras.json              stack size, teleportability, vendor value, tool ti
                               upgrader odds (refinement forge)
 piece-extras.json             comfort, container size, build station, and converter configs
                               (smelter / cookingStation / fermenter: conversions, fuel, yields, timing)
+status-effects.json           every status effect an item refers to (set bonus, equip, consume):
+                              name, tooltip, duration, and the SE_Stats modifiers
 localization.json             every $token encountered -> English
 manifest.json                 game version, timestamp, counts
 ```
@@ -153,6 +155,19 @@ For these recipes the output grows with the ingredient's quality:
 `amount + ceil((quality − 1) × amount × qualityResultAmountMultiplier)`. Raw Fish's multiplier is
 3, so a higher-star fish gives more Raw Fish. The multiplier is dumped for every recipe but is 1,
 and unused, everywhere else.
+
+### Status effects (`status-effects.json`, 0.9.0+)
+
+Every status effect an item refers to — its set bonus (`setStatusEffect` in `item-extras.json`),
+its equip effect and its consume effect (meads, food) — keyed by the effect's prefab name, the same
+name `item-extras.json` uses. Each row has the localized `name` and `tooltip`, the effect's C#
+`type`, its duration `ttl` in seconds, and `stats` for `SE_Stats` effects (`null` otherwise).
+
+`stats` holds raw game values. A multiplier (`healthRegenMultiplier`, …) of **1** and a modifier
+(`runStaminaDrainModifier`, …) of **0** mean "no change". A modifier is a fraction: `-0.1` is −10%.
+`skillLevel`/`skillLevel2` are skill ids (`None` when unused) raised by `skillLevelModifier`/
+`skillLevelModifier2`. `percentDamage` is a per-type damage bonus (`0.1` = +10%), and `mods` are
+damage-**taken** modifiers such as `{ "type": "Fire", "modifier": "Resistant" }`.
 
 ## Compatibility
 

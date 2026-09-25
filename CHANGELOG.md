@@ -3,6 +3,24 @@
 Versions track the plugin, not the game. The Valheim version a dump came from is recorded in
 `manifest.json` and stamped into every generated markdown file.
 
+## 0.9.0
+
+Adds the status effects items refer to. All changes are additive: no existing key moved or
+changed.
+
+- **New `status-effects.json`**: every set bonus, equip effect and consume effect (meads, food)
+  that an item names in `item-extras.json`, keyed by effect prefab name. Each row has the
+  localized name and tooltip, the duration, and — for `SE_Stats` effects — the modifiers that say
+  what the effect does: stamina use (run, jump, attack, block, dodge, swim, sneak), health,
+  stamina and eitr regen, up-front and over-time restores, up to two skill-level boosts, per-type
+  damage bonuses, damage-taken modifiers, speed and carry weight.
+- **`manifest.json`** gains a `statusEffects` count.
+
+Set-bonus tooltips are often flavour ("Makes you more sneaky."); the numbers live only on the
+effect object, so this is the only way to know what a set bonus actually does.
+
+Tested against Valheim 1.0.15.
+
 ## 0.8.0
 
 Adds the Fermenter's configuration and the any-one-ingredient recipe flag. All changes are
